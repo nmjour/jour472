@@ -34,14 +34,23 @@ setwd("~/code/data_journalism_2023_spring")
 ### How to install and load the tidyverse
 
 ```{r}
-install.packages("tidyverse")
+#install.packages("tidyverse")
 library(tidyverse)
 ```
 
 ### How to read in a CSV file from the Internet
 
+CSV files are spreadsheets.
+
 ```{r}
 wes_moore_contributions <- read_csv("https://raw.githubusercontent.com/stephenneukam/CNS_Annapolis/main/Campaign_finance/Moore_ContributionsList.csv")
+```
+
+### How to set a variable
+
+```{r}
+variable_name <- value
+variable_name <- command()
 ```
 
 ### How to count rows
@@ -54,4 +63,22 @@ dataframe %>%
   summarize(count = n())
 ```
 
+## Commands
 
+### glimpse()
+
+Lays out variables (columns of spreadsheet) and the data type of each variable.
+
+Data types:
+-   char = character, or a string of text
+-   dbl = number
+-   logical = boolean
+-   date
+-   datetime
+
+### head()
+
+Gives you the first 6 rows of data.
+
+## Random notes
+- Tables are sorted in ascending order. To change, use arrange(desc(variable))
