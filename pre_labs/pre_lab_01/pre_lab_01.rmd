@@ -140,7 +140,7 @@ umd_courses |>
 
 Describe what you think each line of this code is doing below, based on the result:
 
-**Answer:** This is a table describing the number of courses available per academic term.
+**Answer:** This is a table describing the total number of courses available per academic term.
 
 ### Task 10: Adding arrange to sort the data
 
@@ -159,7 +159,7 @@ umd_courses |>
   arrange(desc(count_classes))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:** This is organized by the number of courses in descending order. Meaning, the largest course listings are at the top.
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:** This is organized by the number of total courses in descending order. Meaning, the largest course listings per term are at the top.
 
 ### Task 11: Grouping by multiple columns
 
@@ -177,7 +177,7 @@ umd_courses |>
 
 Compared to the previous codeblock, how did the output change and what in the code changed it?
 
-**Answer:** This is organized by term in chronological order, and then for each term, the departments are listed alphabetically.
+**Answer:** This is organized by term in chronological order, and then for each term, the departments are listed alphabetically. The number of classes counted are for each department, per term.
 
 ### Task 12: Other summary functions
 
@@ -194,7 +194,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:**  The table is organized by the total number of seats, in descending order.
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:**  The table is grouped by term, then organized by the total number of seats, in descending order. It also lists the total number of seats per term.
 
 ### Task 13: different kinds of summarizations
 
@@ -212,7 +212,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer**
+Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer** This table is also organized by the total number of seats, in descending order. However, there are new columns listing the average and median amount of seats per term. The top terms listed -- meaning, those that have the most number of seats -- are fall terms.
 
 ### Task 14: more aggregations
 
@@ -226,15 +226,15 @@ umd_courses |>
     total_seats = sum(seats),
     mean_seats = mean(seats),
     median_seats = median(seats),
-    # add minimum seats here
-    # add maximum seats here
+    min_seats = min(seats),
+    max_seats = max(seats)
   ) |>
   arrange(desc(total_seats))
 ```
 
 Compared to the previous codeblock, what has changed and how did that affect the result? How is the data sorted?
 
-**Answer**
+**Answer** Classes are grouped by department (in alphabetical order) instead of term. The minimum and maximum seats per department are also listed.
 
 ### Task 12: Questions
 
@@ -242,8 +242,8 @@ No code here; I want you to provide three questions that this data suggests to y
 
 **Answer**
 
-1.  
+1.  Which department has grown or shrunk the most in course offerings over the years?
 
-2.  
+2.  Which departments or classes are more reliable in providing syllabi?
 
-3.  
+3.  Is the number of seats proportional to student demand? (Would have to compare seat numbers to enrollment numbers)
