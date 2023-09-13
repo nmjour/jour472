@@ -1,0 +1,103 @@
+---
+title: "lab_01"
+author: "Derek Willis"
+date: "2023-01-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Turn off scientific notation
+options(scipen=999)
+```
+
+## About this lab
+
+To complete this lab, you need to: \* run existing code as directed (look for **Task**). \* modify existing code as directed (look for **Task**). \* write code in empty codeblocks provided to answer questions included (look for **Q**). \* write out the answer in the form of a complete sentence in the space given (look for **A**). When you are finished, commit changes and push to your personal GitHub repo, then submit the URL to this document on ELMS.
+
+Remember to add any new verbs or concepts to your class reference notebook!
+
+## Load libraries and establish settings
+
+**Task** Run the codeblock below to load the Tidyverse. To run the codeblock, hit the little green play button in the upper right corner of the gray area (the codeblock) below.
+
+```{r}
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+```
+
+## Load Data
+
+We're going to load the UMD courses data.
+
+**Task** Run the codeblock below to load the data, which is contained in an RDS file.
+
+```{r}
+umd_courses <- read_rds("lab_01.rds")
+```
+
+## Answer questions
+
+**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you? **A1** "University Courses" is one of the departments with the highest average number of seats, but I'd like to know what those courses look like.
+
+```{r}
+### take the data frame
+umd_courses |> 
+### group by department
+  group_by(department) |>
+### compute average number seats per department
+  summarize(
+    mean_seats = mean(seats)
+  ) |> 
+### sort by descending order according to mean_seats
+  arrange(desc(mean_seats))
+```
+
+**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. **A2**
+
+```{r}
+### take the data frame
+umd_courses |> 
+### group by class id
+  group_by(id) |> 
+### count iterations of each class id
+  summarize(
+    count_id = n()
+  ) |> 
+### sort by count_id
+  arrange(desc(count_id))
+```
+
+**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? **A3** Kendra Portier
+
+```{r}
+### take the data frame
+umd_courses |> 
+### group by department, instructors
+  group_by(department, instructors) |> 
+### count iteration of classes per instructor per department
+  summarize(
+    count_classes = n()
+  )  |> 
+### sort by counted classes
+  arrange(desc(count_classes))
+```
+
+**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? **A4** I wish there was a way to exclude counted classes that don't have a listed instructor. I think if there was a way to double-check my work with a different calculation, I'd be more confident in my answer.
+
+**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? **A5** Which department has grown or shrunk the most in course offerings over the years?
+
+```{r}
+### take the data frame
+umd_courses |>
+## group by term, department
+  group_by(term, department) |>
+### count classes per term per department
+   summarize(
+    count_classes = n()
+### find a way to compute the range of each department (basically taking the most recent term's class count and subtracting it from the oldest term's class count, per department)
+  )  |> 
+arrange(desc(term))
+### i would actually arrange the table by the range command, in descending order
+```

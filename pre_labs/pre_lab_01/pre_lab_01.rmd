@@ -194,7 +194,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:**  The table is grouped by term, then organized by the total number of seats, in descending order. It also lists the total number of seats per term.
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:** The table is grouped by term, then organized by the total number of seats, in descending order. It also lists the total number of seats per term.
 
 ### Task 13: different kinds of summarizations
 
