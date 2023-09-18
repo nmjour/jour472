@@ -63,22 +63,76 @@ dataframe %>%
   summarize(count = n())
 ```
 
-## Commands
+## Functions
 
 ### glimpse()
 
 Lays out variables (columns of spreadsheet) and the data type of each variable.
 
-Data types:
--   char = character, or a string of text
--   dbl = number
--   logical = boolean
--   date
--   datetime
+Data types: - char = character, or a string of text - dbl = number - logical = boolean - date - datetime
 
 ### head()
 
 Gives you the first 6 rows of data.
 
+### group_by()
+
+Groups data by **column heads.** Can group by multiple columns.
+
+### summarize()
+
+Holding function to compute math.
+
+### arrange()
+
+Outputs arrangement of data
+
+### summary()
+
+Provides length, data type and (if data type is numeric) quartiles. Good way to see if there's any interesting points in the data.
+
+### colnames()
+
+Prints out column names of dataset.
+
+### filter()
+
+Creates a subset of the data, by altering what **rows** you see. Try to do this first before other functions.
+
+```{r}
+filter(operator == criteria)
+# for numeric filters, can use > or <
+# use "" to distinguish character criteria. not needed for numbers
+# use str_detect(column_head, "criteria") to filter using a part of a string
+```
+### select()
+
+Creates a subset of the data, by altering what **columns** you see. Used less compared to filter(). You will have the same number of records when you are done, but fewer columns of data to work with.
+
+### mutate()
+
+Alters an existing column or creates a new one. mutate(column = change)
+
+### operators
+```{r}
+# <- variable assignment
+# = assignment
+# == equality
+# & boolean, and. both conditions need to be true for it to be included
+# | boolean, or. any of the conditions can be true and it will be included
+```
+
 ## Random notes
-- Tables are sorted in ascending order. To change, use arrange(desc(variable))
+
+-   Basic formula of what to write:
+
+```{r}
+data |>
+  group_by(COLUMN NAME) |>
+  summarize(
+    VARIABLE NAME = AGGREGATE FUNCTION(COLUMN NAME)
+    )
+```
+
+-   Tables are sorted in ascending order. To change, use arrange(desc(variable))
+-   When it comes to filters, OR is additive/inclusive; AND is restrictive/exclusive.
