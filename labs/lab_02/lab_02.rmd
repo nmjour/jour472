@@ -1,0 +1,192 @@
+---
+title: "lab_02"
+author: "derek willis"
+date: "2023-09-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+library(lubridate)
+```
+
+## Load Data
+
+Let's keep working with the UMD courses and Maryland campaign expense data we used in the pre_lab.
+
+```{r}
+umd_courses <- read_rds("data/umd_courses.rds")
+maryland_expenses <- read_csv("data/maryland_expenses.csv")
+```
+
+## Answer questions
+
+**Q1.** How many departments have offered the courses with "Climate" in the title and at least one seat? Which department has offered the most? **A1.** 26 departments have offered courses with "Climate" in the title and at least one seat. Atmospheric and Oceanic Science has offered the most, with 68 classes.
+
+```{r}
+# copy data set
+climate_courses <- umd_courses |> 
+  filter(
+# filter data to detect "climate" in course title
+    str_detect(title, "Climate")
+# AND filter data for courses that have at least one seat
+    & seats >= 1
+  ) |> 
+# group data by department
+  group_by(department) |> 
+# count number of filtered classes per department
+  summarize(
+      count_id = n()
+  ) |> 
+# sort data by counted filtered classes per department, in descending order
+arrange(desc(count_id))
+```
+
+**Q2.** Of the departments listed in A1, which one is the most interesting to you, and why? **A2.** Germanic Studies is the most interesting to me, as I'm assuming this is a historical/linguistic-based discipline, and I'm wondering what they'd be studying climate for.
+
+**Q3** Which departments have the most courses in the Fall 2023 term? And which departments in that term have at least one syllabus posted? How are the top five departments different in each result?
+
+**A3.**
+
+Most courses in Fall 2023
+
+1.  Business and Management
+
+2.  Music
+
+3.  English
+
+4.  Teaching and Learning, Policy and Leadership
+
+5.  Information Studies
+
+Most syllabi posted
+
+1.  Business and Management
+
+2.  Economics
+
+3.  Music
+
+4.  Biological Sciences Program
+
+5.  Information Studies
+
+```{r}
+# copy data set
+fall2023_courses <- umd_courses |> 
+# filter data to fall 2023
+  filter(
+    term == 202308
+  ) |> 
+# group data by department
+  group_by(department) |> 
+# count number of classes per department
+  summarize(
+    count_id = n()
+  ) |> 
+# arrange by counted classes
+arrange(desc(count_id))
+# show top
+head(fall2023_courses)
+
+# to answer second question
+fall2023_syllabi <- umd_courses |> 
+# filter data to fall 2023 AND at least one syllabus counted
+  filter(
+    term == 202308
+    & syllabus_count >= 1
+  ) |> 
+# group data by department
+  group_by(department) |> 
+# count syllabus_count per department
+  summarize(
+    count_syllabus_count = n()
+  ) |> 
+# arrange by counted syllabus_count by department
+arrange(desc(count_syllabus_count))
+# show top
+head(fall2023_syllabi)
+
+```
+
+**Q4.** Using the Maryland campaign expenses data, change the datatype of the expenditure_date column so that it is a date and not a chr, saving the result as the same dataframe. Then create a new column for the month based on expenditure_date. Then write code that shows total amount spent each month by Wes Moore's committee (you'll need to search the data to find the exact name). Write a sentence describing the pattern of spending over time. **A4.** There's waves of spending and no spending from 2021-2022, with the largest amounts being spent leading up to the 2022 election.
+
+```{r}
+# alter data type to date, not chr
+maryland_expenses <- maryland_expenses |> 
+  mutate(
+    expenditure_date=ymd(expenditure_date)
+  )
+
+# answered the rest of the question on this copy
+maryland_expenses_work <- maryland_expenses |> 
+# create month column
+  mutate(
+    month = floor_date(expenditure_date, "month")
+  ) |> 
+# group data by month
+  group_by(month) |> 
+# count total spent per month
+  summarize(
+    total_amount = sum(amount)
+  )
+
+```
+
+**Q5.** Using case_when(), create a column in the Maryland expenses data called `spending_location` indicating whether each record spent money in Maryland or outside Maryland. For records that are in Maryland, make the new column's value "In-state" and for the others, make it "Out of state". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe). **A5** According to the code, the campaign spent over $77 million in Maryland and nothing out of state, but that doesn't make sense to me. I'm expecting some expenditures coming from out of state, with most of the money still being concentrated in-state.
+
+```{r}
+# copy data set
+maryland_expenses_location <- maryland_expenses |> 
+# create column
+  mutate(
+    spending_location = case_when(
+# if address is in MD, assign value in-state
+      str_detect(address, " Maryland ") ~"In-state",
+# if not, assign value "out of state"
+      .default = "Out of state"
+    )
+  ) |> 
+# group expenditures by location
+  group_by(spending_location) |> 
+# sum amounts by location
+  summarize(
+    total_spent = sum(amount)
+  )
+```
+
+**Q6.** Choose your own adventure: using either the UMD courses or campaign expenses data, ask and answer a question that is different than the previous ones. You can use one of the ones you provided in the pre_lab. **A6.** Music, with 59 classes
+
+```{r}
+# question: which department has the most classes with less than or equal to 10 seats, in the  fall 2023 semester?
+
+small_courses <- umd_courses |> 
+# filter data to only fall 2023 semester, with classes with less than/equal to 10 seats
+  filter(
+    term == 202308
+    & seats <= 10
+  ) |> 
+# group data by department
+  group_by(department) |> 
+# count filtered classes per department
+  summarize(
+    count_id = n()
+  ) |> 
+# arrange by counted classes
+  arrange(desc(count_id))
+
+# print top results
+head(small_courses)
+```
