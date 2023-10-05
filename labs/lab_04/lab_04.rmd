@@ -63,7 +63,7 @@ md_expenses <- read_csv("data/maryland_expenses.csv") |>
 4.  When you are done standardizing `payee_clean`, export it as a new CSV file to your data folder, *giving it a different name* and read it back into RStudio as a new dataframe.
 5.  Using that `payee_clean` column in your new dataframe, calculate the total amount of Facebook spending by each committee and present the results showing the committee that spent the most first.
 
-**A1.**
+**A1.** The committee that spent the most on Facebook advertising is Friends of Ashwani Jain.
 
 ```{r}
 # copy data set
@@ -107,18 +107,82 @@ After reviewing Ashwani Jain's campaign ads on Facebook, I noticed that a majori
 
 **Q3.** Given the list of top spenders in A1 and the primary results for governor (<https://elections.maryland.gov/elections/2022/primary_results/gen_results_2022_1.html>), who is missing from that Q1 list? Did those campaigns run Facebook ads? Who are the biggest recipients of media expenses by the Democratic primary winner for governor (HINT: that person has two committees, the second one with his running mate)?
 
-**A3.**
+**A3.** Wes Moore and Aruna Miller, who won the Democratic primary, is missing from the Q1 list. Moore and Miller devoted most of their media expenses to SKDK, a political consulting firm that works with Democratic politicians. They also spent a lot of money on FogLamp, which is an internet system(?) and Apollo Artisty, a creative digital agency that works on branding, social engagement and content strategy.
 
 ```{r}
+# check if moore or cox paid for facebook
+
+search_fb_expenses <- payee_media_clean |> 
+# filter by meta & committee name
+  filter(
+    payee_clean == "META PLATFORMS" &
+    str_detect(committee_name, "Moore") |
+    str_detect(committee_name, "Cox")
+    ) |> 
+# group by committee
+  group_by(committee_name) |> 
+# add up total amounts per committee
+  summarize(
+    total_amount = sum(amount)
+  ) |> 
+# arrange by top totals
+arrange(desc(total_amount))
+
+# assess moore media expenses
+moore_expenses <- payee_media_clean |> 
+# filter by moore committees
+  filter(
+    str_detect(committee_name, "Moore")
+  ) |> 
+# group by payee
+  group_by(payee_clean) |> 
+# sum up expenses by payee
+  summarize(
+    total_amount = sum(amount)
+  ) |> 
+arrange(desc(total_amount))
 ```
 
 **Q4.** The media expense data you cleaned also has a standardized purpose column. Write code to generate a list of the committees with the total amount of spending on online advertising. How does this list compare to the one from Q1 about top Facebook spenders? Of the top 5 committees who spent the most on Facebook ads from Q1, are there any that appear to have spent *all* of their online advertising dollars on Facebook?
 
-**A4.**
+**A4.** Sorting by online advertising in a more general sense provided bigger names in Maryland politics, like Moore and Tom Perez. This shows that these politicians did use online advertising but not necessarily ads on Facebook. There are also more non-candidate committees listed, like the teachers/public educators' union, CASA, and the Maryland House Democratic Caucus.
+
+The top five committees who spent the most on on Facebook ads from Q1 all appear to have spent all of their online advertising strategy on Facebook.
 
 ```{r}
+# copy data set
+online_ads_expenses <- payee_media_clean |> 
+# filter by purpose
+  filter(expense_purpose == "Online Advertising") |> 
+# group by committee
+  group_by(committee_name) |> 
+# sum up expenses by committee
+  summarize(
+    total_amount = sum(amount)
+  ) |> 
+# show top totals
+arrange(desc(total_amount))
+
+# copy data set
+online_ads_fb <- payee_media_clean |> 
+# filter by online ad purpose and meta payee
+  filter(
+    expense_purpose == "Online Advertising" &
+    payee_clean == "META PLATFORMS"
+  ) |> 
+# group by committee name
+  group_by(committee_name) |> 
+# sum up total amount
+  summarize(
+    total_amount = sum(amount)
+  ) |> 
+arrange(desc(total_amount))
 ```
 
 **Q5** Your editor asks you to summarize your findings about spending on Facebook by Maryland political candidates. How much do we know and what don't we know? What's the best story idea you've found here?
 
-**A5**
+**A5** Tom Perez and Wes Moore, who were the most competitive gubernatorial candidates in the 2022 Democratic primary, did not rely on a media strategy centered on Facebook.
+
+Most of the analysis in this lab focused on Facebook expenditures. I'd be interested in researching how consulting/PR companies (which Moore spent a lot of money on) utilize social media. I'd also like to compare how much was spent on other forms of advertising (print, broadcast, flyers, etc.) to online ads.
+
+I think one story from this analysis can be looking into Facebook's evolving role in political campaigns from a local level. After looking up Ashwani Jain on Google I learned that he used to be an Obama administration official, and it seems like he took a lot of cues from this former president's campaign. I heard that the Obama campaign relied on social media (Facebook especially) to engage youth voters. From the numbers, it seems like this wasn't a successful strategy for Jain. Obama was in office over a decade ago now, and our relationship with and usage of Facebook has vastly changed since then.
