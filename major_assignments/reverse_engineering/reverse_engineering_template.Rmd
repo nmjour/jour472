@@ -16,39 +16,54 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction 
+## Introduction
 
-In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
+In this notebook, we are reverse engineering the story, [STORY NAME](STORY%20URL)
 
 ## Load libraries
 
-Loading required libraries for this analysis.
+Loading required libraries for this analysis."
 
 ```{r echo=FALSE, message=FALSE}
+
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse
+library(tidyverse)
+
+# Load janitor
+library(janitor)
+
+install.packages("readxl")
+library(readxl)
 
 ```
 
 ## Load and Cleaning Data
 
-In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data.
 
 ```{r}
-# Load required data
+# load data
+casetypes <- read_csv("data/casetypes.csv")
 
-# Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
+departments <- read_csv("data/departments.csv")
+payouts <- read_excel("data/payouts.xlsx") |> 
+  
 
-# Clean required data and prepare for analysis if needed. 
 
 
 ```
 
 ## Sentences to Engineer
+
 In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -59,8 +74,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -71,8 +86,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -83,8 +98,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 4
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -95,8 +110,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 5
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here

@@ -1,0 +1,230 @@
+---
+title: "Reverse Engineering Project"
+author: "Daranee Balachandar, Paul Kiefer, Nyrene Monforte"
+date: "Date here"
+output:
+  html_document:
+    theme: cerulean
+    highlight: pygments
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this notebook, we are reverse engineering the story, [L.A. is slammed with record costs for legal payouts](https://www.latimes.com/local/lanow/la-me-ln-city-payouts-20180627-story.html)
+
+## Load libraries
+
+Loading required libraries for this analysis.
+
+```{r echo=FALSE, message=FALSE}
+
+library(tidyverse)
+library(lubridate)
+library(janitor)
+
+```
+
+## Load and Cleaning Data
+
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data.
+
+Our data is from the city of Los Angeles, but was directly sourced from the LA Times' GitHub repo.
+
+-   payouts.csv: Our main spreadsheet that lists all of city's liability payouts from 2006-2018, in the months of July-March of each year. The original excel sheet this is derived from has two tabs -- one that lists all recorded cases, and another that lists the total amount of money spent in payouts each year.
+
+-   departments.csv: Tabulated from the LA Times, this data frame aims to mitigate the redundancy of departments listed in payouts.csv.
+
+-   casetypes.csv: Tabulated from the LA Times, this data frame better categorizes the types of cases listed in payouts.csv.
+
+```{r}
+# set working directory as reverse-engineering-la-times and load required data
+la_payouts <- read_csv("data/payouts/payouts.csv", guess_max = 18704)
+la_departments <- read_csv("data/departments.csv")
+la_casetypes <- read_csv("data/casetypes.csv")
+
+```
+
+```{r}
+
+# clean data
+
+la_payouts_cleaned <- la_payouts
+# create column names from first row
+colnames(la_payouts_cleaned) <- la_payouts[1,]
+# remove first row
+la_payouts_cleaned <- la_payouts_cleaned[-1,]
+
+#Remove $ and commas from the AMOUNT column. 
+
+la_payouts_cleaned["AMOUNT"] <- lapply(la_payouts_cleaned["AMOUNT"], function(x) as.numeric(gsub("[,$]", "", x)))
+
+la_payouts_cleaned <- la_payouts_cleaned |>
+  filter(
+#Remove null values from AMOUNT column.
+    !is.na(la_payouts_cleaned$"AMOUNT") &
+#Remove Grand Total entry, which lists Department as null.
+    !is.na(la_payouts_cleaned$"DEPARTMENT")
+  )|>
+# clean column names
+  clean_names() |> 
+# capitalize department, case_type records
+  mutate(
+    department = str_to_upper(department),
+    case_type = str_to_upper(case_type)
+  )
+
+la_payouts_cleaned
+```
+
+```{r}
+#Export to CSV for clustering in Open Refine
+write_csv(la_payouts_cleaned,"C:/Users/paulf/Reverse-Engineering-LA-Times/data/datasets_generated/la_payouts_cleaned")
+```
+
+```{r}
+#Read CSV back into R Studio
+la_payouts_cleaned <- read_csv("data/datasets_generated/la-payouts-cleaned.csv", guess_max = 18670)
+```
+
+## Sentences to Engineer
+
+In this notebook, we are reverse engineering five sentences from the story.
+
+### Sentence 1
+
+-   **Sentence text**: "Last budget year, the city paid out more than $200 million in legal settlements and court judgments --- a record amount that was more than the city spent on its libraries or fixing its streets." Amount paid by city of LA for payouts by year.
+-   **Analysis summary**: So the "last budget year" in the statement refers to the fiscal year 2017 and the city did indeed payout more than \$200 million that year. \$201,372,368.00 to be exact. And 2017 was indeed the fiscal year with the highest payouts. The second part of the statement, where it compares payouts to city spending on libraries and fixing streets is not possible using the dataset available from this story.
+
+```{r}
+# Put code to reverse engineer sentence here
+la_payouts_cleaned |>
+  group_by(fiscal_year) |> 
+  summarize(total_amount = sum(amount)) |> 
+  arrange(desc(total_amount))
+
+# Display results of code below this codeblock
+
+```
+
+### Sentence 2
+
+-   **Sentence text**: "Thousands of legal battles involving the Los Angeles Police Department, including a rash of recent settlements over police shootings and wrongful imprisonment, have added up to more than 40% of the total --- a higher sum than any other city department, the analysis showed."
+-   **Analysis summary**:
+
+While I am sure there is a cleaner method to calculate the percentage of the total payouts associated with each department, we were roughly able to confirm the LA Times' finding that the Los Angeles Police Department was linked to more than 40 percent of the total payout sum. After standardizing the department field to consolidate the many bureaus of the Public Works Department, we can confirm that the agency is responsible for the second-highest share of the city's legal payouts.
+
+```{r}
+#group by department. 
+la_payouts_cleaned |>
+  group_by(department_clean) |>
+  summarise(
+  total_department_payout = sum(amount)) |>
+  arrange(desc(total_department_payout))
+```
+
+```{r}
+#calculate the sum of all payouts.
+
+grand_total = sum(la_payouts_cleaned$amount)
+```
+
+```{r}
+# Not ideal, but since I couldn't figure out a different way to do this, I created a new dataframe in which I replaced the "amounts" column values with the amounts divided by the sum of all the payouts. I did not change the la_payouts_cleaned dataframe.
+
+la_payouts_cleaned_dept_pct <- la_payouts_cleaned|>
+  mutate_at(vars(amount), funs(./ grand_total))
+
+la_payouts_cleaned_dept_pct
+```
+
+```{r}
+la_payouts_cleaned_dept_pct |>
+  #group by department)
+  group_by(department_clean) |>
+  summarise(
+  total_department_payout = sum(amount)) |>
+  arrange(desc(total_department_payout))
+```
+
+### Sentence 3
+
+-   **Sentence text**: "Many cases have arisen from people being wounded or killed while crossing city streets: In recent years, the city agreed to pay \$15 million to end a legal battle over a man who was gravely injured while crossing Franklin Avenue in Hollywood, another \$15 million to the family of two girls hit in a North Hollywood crosswalk and \$9.5 million to the family of a teenage girl fatally struck by a taxi near Dockweiler State Beach."
+
+-   **Analysis summary**: After sorting this list, I tried to search up the case names online with similar payout amounts. I was able to confirm the second \$15 million payout that was given to a family who lost two girls, as [the LA Times previously reported on this incident](https://www.latimes.com/local/lanow/la-me-ln-lawsuit-north-hollywood-20151209-story.html). I was not able to find the other two examples - maybe because there were multiple payments made?
+
+```{r}
+# copy data set
+la_payouts_examples <- la_payouts_cleaned |> 
+# filter by amount greater than to 9 mil
+  filter(
+    amount > 9000000
+  ) |> 
+# display results
+arrange(desc(amount))
+```
+
+### Sentence 4
+
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
+
+```{r}
+# Put code to reverse engineer sentence here
+
+# Display results of code below this codeblock
+
+```
+
+### Sentence 5
+
+-   **Sentence text**: "Last budget year, the city paid out 30 settlements of \$1 million or more --- five times as many as a decade before."
+
+-   **Analysis summary**: We were able to replicate the LA Times' finding that the city paid out 30 settlements of \$1 million or more in fiscal year 2017, and we were able to take the analysis a step further. With minimal extra code, we find that the Los Angeles Police Department was linked to just over 40 percent of the payouts of \$1 million or more -- about the same as its share of the all payouts in the city's data.
+
+```{r}
+la_payouts_cleaned_over_million <- la_payouts_cleaned |>
+    filter((la_payouts_cleaned$amount >= 1000000) & (la_payouts_cleaned$fiscal_year == 2017))
+
+la_payouts_cleaned_over_million
+```
+
+```{r}
+la_payouts_cleaned_over_million |>
+  group_by(department_clean) |>
+  summarise(
+    count_payouts = n()
+  ) |>
+  arrange(desc(count_payouts))
+```
+
+### Extra calculation:
+
+\*\*\* Because two of our sentences are so closely related that they can be answered with the same code, we decided it might be worthwhile to ask questions that the LA Times did not.
+
+For example, which department is responsible for the largest number of civil rights settlements?
+
+The Police Department is the obvious front runner, but it might be more interesting to review the civil right settlements involving the Los Angeles planning department.
+
+```{r}
+la_payouts_cleaned_cr <- la_payouts_cleaned |>
+    filter(str_detect(case_type, "CIVIL RIGHTS"))
+
+la_payouts_cleaned_cr
+```
+
+```{r}
+la_payouts_cleaned_cr |>
+  group_by(department_clean) |>
+  summarise(
+    count_payouts = n()
+  ) |>
+  arrange(desc(count_payouts))
+```
