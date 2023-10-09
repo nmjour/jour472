@@ -142,3 +142,10 @@ data |>
 
 -   Tables are sorted in ascending order. To change, use arrange(desc(variable))
 -   When it comes to filters, OR is additive/inclusive; AND is restrictive/exclusive.
+-   ! = boolean/exclusionary filter:
+```{r}
+# filter for payee names that are NOT n/a values
+filter(!is.na(payee_name))
+# another option is
+drop_na(column_name)
+```

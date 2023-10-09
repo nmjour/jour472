@@ -46,7 +46,9 @@ Our data is from the city of Los Angeles, but was directly sourced from the LA T
 
 ```{r}
 # set working directory as reverse-engineering-la-times and load required data
-la_payouts <- read_csv("data/payouts/payouts.csv", guess_max = 18704)
+la_payouts <- read_csv("data/payouts/payouts.csv", guess_max = 18704, skip = 1) |> 
+# clean names
+  clean_names()
 la_departments <- read_csv("data/departments.csv")
 la_casetypes <- read_csv("data/casetypes.csv")
 
@@ -55,26 +57,17 @@ la_casetypes <- read_csv("data/casetypes.csv")
 ```{r}
 
 # clean data
-
 la_payouts_cleaned <- la_payouts
-# create column names from first row
-colnames(la_payouts_cleaned) <- la_payouts[1,]
-# remove first row
-la_payouts_cleaned <- la_payouts_cleaned[-1,]
 
-#Remove $ and commas from the AMOUNT column. 
-
-la_payouts_cleaned["AMOUNT"] <- lapply(la_payouts_cleaned["AMOUNT"], function(x) as.numeric(gsub("[,$]", "", x)))
+la_payouts_cleaned["amount"] <- lapply(la_payouts_cleaned["amount"], function(x) as.numeric(gsub("[,$]", "", x)))
 
 la_payouts_cleaned <- la_payouts_cleaned |>
   filter(
 #Remove null values from AMOUNT column.
-    !is.na(la_payouts_cleaned$"AMOUNT") &
+    !is.na(la_payouts_cleaned$"amount") &
 #Remove Grand Total entry, which lists Department as null.
-    !is.na(la_payouts_cleaned$"DEPARTMENT")
+    !is.na(la_payouts_cleaned$"department")
   )|>
-# clean column names
-  clean_names() |> 
 # capitalize department, case_type records
   mutate(
     department = str_to_upper(department),
@@ -100,7 +93,7 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
--   **Sentence text**: "Last budget year, the city paid out more than $200 million in legal settlements and court judgments --- a record amount that was more than the city spent on its libraries or fixing its streets." Amount paid by city of LA for payouts by year.
+-   **Sentence text**: "Last budget year, the city paid out more than \$200 million in legal settlements and court judgments --- a record amount that was more than the city spent on its libraries or fixing its streets." Amount paid by city of LA for payouts by year.
 -   **Analysis summary**: So the "last budget year" in the statement refers to the fiscal year 2017 and the city did indeed payout more than \$200 million that year. \$201,372,368.00 to be exact. And 2017 was indeed the fiscal year with the highest payouts. The second part of the statement, where it compares payouts to city spending on libraries and fixing streets is not possible using the dataset available from this story.
 
 ```{r}
@@ -165,10 +158,16 @@ la_payouts_cleaned_dept_pct |>
 la_payouts_examples <- la_payouts_cleaned |> 
 # filter by amount greater than to 9 mil
   filter(
-    amount > 9000000
+    str_detect(case_type, "DANGEROUS CONDITION") |
+    str_detect(case_type, "TRAFFIC ACCIDENT")  &
+    department_clean ==  "DEPARTMENT OF PUBLIC WORKS"
+  ) |> 
+  group_by(claim_number_case_number, case_name) |> 
+  summarize (
+    total_amount = sum(amount)
   ) |> 
 # display results
-arrange(desc(amount))
+arrange(desc(total_amount))
 ```
 
 ### Sentence 4
