@@ -1,0 +1,249 @@
+---
+title: "week7_recap"
+author: "Daniel Trielli"
+date: "2023-10-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Turn off scientific notation
+options(scipen=999)
+```
+
+## Loading the packages
+
+Run the codeblock below to load the packages we will need for this recap
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+```
+
+## Load Data
+
+Run the codeblock below to load the data.
+
+```{r}
+earthquakes <- read_csv('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv')
+
+#Setting time column as datetime
+earthquakes <- earthquakes |> mutate(time = as_datetime(time))
+```
+
+#### Answer the questions below
+
+Most questions have a code block and a space for an answer below. Write the code you think is necessary and, in the answer space, write out what you did and what was the result.
+
+------------------------------------------------------------------------
+
+#### **Q1** Look at the earthquakes dataset. Finish the sentence below as if you were explaining the data to someone who had not seen it before but needs to know about it.
+
+**A1:** This dataset contains a list of documented earthquakes/tremors around the world that occurred from September 11 to October 11, 2023.
+
+------------------------------------------------------------------------
+
+#### **Q2** How many records there are there in this dataset? What do they mean and what useful information we can gather from it, looking at the columns?
+
+**A2:** There are 9,774 records in this dataset. Each record documents the time (in UTC) and location (in longitude, latitude and city) the earthquake/tremor happened, as well as the earthquake's depth and magnitude.
+
+------------------------------------------------------------------------
+
+#### **Q3** How do I reorganize this data to see the ones that are the deepest first? What is the depth that shows up for the deepest one, and its magnitude?
+
+```{r}
+earthquakes |> 
+# arrange data by depth in descending order
+arrange(desc(depth))
+
+```
+
+**A3:** I used the `arrange` function the reorganize the data by depth in descending order. The deepest tremors documented this month had a depth of 669.982 km and a magnitude of 4.2.
+
+------------------------------------------------------------------------
+
+#### **Q4** I just want to see the earthquakes with a magnitude larger than 6. How do I do that? And how many are there that fit this criteria?
+
+```{r}
+earthquakes |> 
+# filter by magnitude
+  filter(
+    mag > 6
+  )
+
+```
+
+**A4:** I used the `filter` function to search for entries that have magnitude larger than 6. There are 13 tremors that occurred this month with a magnitude larger than 6.
+
+------------------------------------------------------------------------
+
+#### **Q5** What about if I want to see earthquakes that have both a magnitude larger than 6 and a depth smaller than 20? How many are there in the data set that fit [both]{.underline} these criteria?
+
+```{r}
+earthquakes |> 
+# filter by mag and depth
+  filter(
+    mag > 6 &
+    depth < 20
+  )
+
+```
+
+**A5:** I used the `filter` function and the `&` operator to search for both magnitude and depth. It is an exclusive filter. There were 6 tremors this month that had a magnitude larger than 6 and a depth smaller than 20 km.
+
+------------------------------------------------------------------------
+
+#### **Q6** What about if I want to see earthquakes that either have a magnitude larger than 6 OR a depth smaller than 20? How many are there in the data set that fit [either]{.underline} these criteria?
+
+```{r}
+
+earthquakes |> 
+# filter by mag or depth
+  filter(
+    mag > 6 |
+    depth < 20
+  )
+
+```
+
+**A6:** I used the `filter` function and the `|` operator to search for either magnitude or depth. It is an inclusive filter. There were 7,446 tremors this month that either had a magnitude larger than 6 or a depth smaller than 20 km.
+
+------------------------------------------------------------------------
+
+#### **Q7** I'm interested in finding earthquakes that took place in Alaska. Which column should I look at? How do I use it to find all the earthquakes in Alaska? How many earthquakes took place there?
+
+```{r}
+earthquakes |> 
+# filter by place
+  filter(
+    str_detect(place,"Alaska")
+  )
+
+```
+
+**A7:** According to the data set, 3,446 earthquakes occurred in Alaska this month. In the `filter` function, I used the `str_detect` function to pick out records documented in Alaska, from the place column.
+
+------------------------------------------------------------------------
+
+#### **Q8** I notice that there is a column called 'type', that seems to have different kinds of tremors. What is the best way to find what are all the possible types of tremors, and counting how many of each there are in this data set? What are the first two most common types of tremors in this data set?
+
+```{r}
+type_earthquakes <- earthquakes |> 
+# group by type
+  group_by(type) |> 
+# count each type
+  summarize(
+    count_type = n()
+  ) |> 
+# arrange by count
+arrange(desc(count_type))
+```
+
+**A8:** I grouped the data according to type, and counted each instance of every type using the `summarize` and `count` functions. The two most common types of tremors are earthquakes and quarry blasts.
+
+------------------------------------------------------------------------
+
+#### **Q9** What is the average depth of the earthquake type in this data set? Is there anything that seems unusual or surprising in this finding?
+
+```{r}
+earthquakes |>
+# filter by type
+  filter(type == "earthquake") |> 
+# calculate avg depth
+  summarize(
+    mean(depth)
+  )
+
+```
+
+**A9:** I filtered for only earthquake entries, and from that list calculated the average depth using the `summarize` and `mean` functions.
+
+The average earthquake depth is 25.238 km. This means that average earthquake documented this month is a shallow earthquake, or one that occurs closer to the Earth's surface. This finding is not very surprising to me. According to the USGS, the depth of an earthquake [can range from 0-700 km](https://www.usgs.gov/programs/earthquake-hazards/determining-depth-earthquake), meaning that there can be big outliers that affected the outcome of this statistic.
+
+------------------------------------------------------------------------
+
+#### **Q10** I'm interested, in the future, to see the hours in which earthquakes happen. How can I extract the hour from the time column?
+
+```{r}
+# copy data
+time_earthquakes <- earthquakes |> 
+# add column
+  mutate(
+# extract hour from time column
+    hour = hour(time)
+  )
+```
+
+**A10:** To extract the hour, I saved a new data frame and used the `mutate` function to add a new column that extracts the hour from the time column for each record.
+
+------------------------------------------------------------------------
+
+#### **Q11** I want to make a note of all the records in this data set that I consider serious. For my purposes, I'm thinking that all tremors that have a magnitude that is larger than 3 are serious. How do I automatically create a new column showing whether an earthquake is serious or not?
+
+```{r}
+serious_earthquakes <- earthquakes |> 
+# create new column
+  mutate(
+    severity = case_when(
+      # if record's mag > 3, assign value
+      mag > 3 ~ "serious",
+      # if not, assign NA
+      .default = NA
+    )
+  )
+
+```
+
+**A11:** I saved a copy of the data frame and used `mutate` to append a new column called "severity." For this column, I use `case_when` that scans each record's magnitude. If a record's magnitude is greater than 3, the value "serious" is assigned to the new column. If it's not greater than 3, NA is assigned.
+
+------------------------------------------------------------------------
+
+#### **Q12** I have no idea how earthquakes work and I'm interested in seeing if there is a particular time of day in which serious earthquakes happen. How can I see that condensed in a table with all the hours in a day and all the serious earthquakes in each hour? What is the hour with fewer serious earthquakes and the one with the most serious earthquakes?
+
+```{r}
+serious_earthquakes_hour <- serious_earthquakes |> 
+# add hour column
+  mutate(
+    hour = hour(time)
+  ) |> 
+# filter by severity
+  filter(
+    severity == "serious"
+  ) |> 
+# group by hour
+  group_by(hour) |> 
+# count each earthquake by hour
+  summarize(
+    count_severity = n()
+  ) |> 
+arrange(desc(count_severity))
+
+```
+
+**A12**: I saved a copy of the data set that includes the "hour" and "severity" mutated columns. Then, I filtered to have only the records marked as serious. I grouped these filtered results by the hour, and then counted each record per hour. Then I arranged the outputted list to be ordered by the hour with the most counted serious earthquakes to the least.
+
+The hour with fewer serious earthquakes is 12 noon, while the hour with the most serious earthquakes is 2 am.
+
+------------------------------------------------------------------------
+
+#### **Q13** What's another question you are interested in and how would you ask it in R?
+
+Are there any earthquakes that happened this month south of the equator that had a magnitude greater than 3? Where/when did they happen and what was the most intense one documented?
+
+```{r}
+# copy data set
+south_earthquakes <- earthquakes |> 
+# filter by type, latitude, magnitude
+  filter(
+    type == "earthquake" &
+    latitude <= 0 &
+    mag > 3
+  ) |> 
+# select columns
+  select(time, latitude, longitude, depth, mag, place) |> 
+# arrange by mag, greatest to least
+arrange(desc(mag))
+```
+
+The most intense earthquake documented this month south of the Equator was a 6.9 magnitude earthquake on October 7 in Papua New Guinea.
