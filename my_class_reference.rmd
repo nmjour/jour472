@@ -118,6 +118,10 @@ Creates a subset of the data, by altering what **columns** you see. Used less co
 
 Alters an existing column or creates a new one. mutate(column = change)
 
+### rename()
+
+Renames header rows.
+
 ### operators
 
 ```{r}
