@@ -116,11 +116,37 @@ Creates a subset of the data, by altering what **columns** you see. Used less co
 
 ### mutate()
 
-Alters an existing column or creates a new one. mutate(column = change)
+Alters an existing column or creates a new one. mutate(column = change) Can populate things, create things or alter data types.
 
 ### rename()
 
 Renames header rows.
+
+### bind_rows()
+
+Combines data sets IF the column structure is the same (order can be variable, but needs to be same syntax). Should be saved to a new data frame. Makes a data set longer (more rows.)
+
+```{r}
+combined <- originalset |> 
+  bind_rows(list(dataframe1, dataframe2))
+
+```
+
+### left_join()
+
+Combines data sets and displays every row even if there's no match. Best to do first.
+
+```{r}
+# data with more records should be first
+# take first data frame, join with second data frame, using common column name as the key
+combined <- dataframe1 |> 
+  left_join(dataframe2, join_by("variable"))
+
+```
+
+### inner_join()
+
+Combines data sets and displays only the overlap.
 
 ### operators
 
