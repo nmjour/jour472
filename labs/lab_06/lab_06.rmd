@@ -178,7 +178,7 @@ A4: The zip code with the highest Hispanic population (at 18.5%) had 5 calls per
 ```{r}
 # exploring calls (per capita) in zip codes that have substantial hispanic populations
 
-baltimore_with_demographics |>
+baltimore_hispanic_pop <- baltimore_with_demographics |>
 # group by zip code, pct hispanic
   group_by(zip_code, pct_hispanic, population) |> 
 # count calls per zip code
