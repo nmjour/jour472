@@ -173,7 +173,7 @@ baltimore_with_demographics |>
 
 Q4. Choose your own adventure: I want you to come up with a question you could ask of the Baltimore City data that combines both the calls and the demographic information. You must use both demographics and the overdose call data in your work.
 
-A4: The zip code with the highest Hispanic population (at 18.5%) had 5 calls per capita. I noticed that higher calls per capita were documented in zip codes that had smaller Hispanic populations, like 21205	(which is 8.6% Hispanic and had 13 calls per capita) and 21217 (which is 1.4% Hispanic and had 20 calls per capita).
+A4: The zip code with the highest Hispanic population (at 18.5%) had 5 calls per capita in 2022. I noticed that higher calls per capita were documented in zip codes that had smaller Hispanic populations, like 21205	(which is 8.6% Hispanic and had 13 calls per capita) and 21217 (which is 1.4% Hispanic and had 20 calls per capita).
 
 ```{r}
 # exploring calls (per capita) in zip codes that have substantial hispanic populations
@@ -190,5 +190,7 @@ baltimore_hispanic_pop <- baltimore_with_demographics |>
   ) |> 
 # arrange from highest count to lowest count
 arrange(desc(pct_hispanic))
+
+baltimore_hispanic_pop
 
 ```
