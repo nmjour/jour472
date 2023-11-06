@@ -158,6 +158,27 @@ Combines data sets and displays only the overlap.
 # | boolean, or. any of the conditions can be true and it will be included
 ```
 
+## Using ggplot
+
+-   geometries (`geom`): shapes in which the data will take, what kind of chart you're making
+
+-   aesthetics (`aes`): the visuals, where things will go in that chart
+
+-   uses `+` instead of pipe character
+
+```{r}
+data |> 
+  ggplot() +
+  geom_type(aes()) +
+  theme() +
+  labs(
+    title = "",
+    x = "",
+    y = "",
+    caption = ""
+  )
+```
+
 ## Random notes
 
 -   Basic formula of what to write:
@@ -173,6 +194,7 @@ data |>
 -   Tables are sorted in ascending order. To change, use arrange(desc(variable))
 -   When it comes to filters, OR is additive/inclusive; AND is restrictive/exclusive.
 -   ! = boolean/exclusionary filter:
+
 ```{r}
 # filter for payee names that are NOT n/a values
 filter(!is.na(payee_name))
